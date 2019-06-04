@@ -1,0 +1,181 @@
+<?php
+	// Check if the user is logged in and redirect to login page if not
+	include 'check-logged-in.php';
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Cart | E-Shopper</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/price-range.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/main.css" rel="stylesheet">
+	<link href="css/responsive.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+	<script ></script>
+    <![endif]-->
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+
+<body>
+	<header id="header"><!--header-->
+		<div class="header-middle"><!--header-middle-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="logo pull-left">
+							<a href="index.html"><img src="images/home/logo.png" alt="" /></a>
+						</div>
+					</div>
+					<div class="col-sm-8">
+						<div class="shop-menu pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="cart.html" class="active"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+									if(isset($_SESSION['user_ID']) && isset($_SESSION['username'])){
+										// show the account and logout button if logged in
+										echo '<li><a href="my-account.html" class="" id="account_button"><i class="fa fa-user"></i> Account</a></li>';
+										echo '<li><a href="logout.php" class="" id="logout_button"><i class="fa fa-sign-out"></i> Logout</a></li>';
+									}else{
+										// show the login button if not logged in
+										echo '<li><a href="login.html" class="" id="login_button"><i class="fa fa-lock"></i> Login</a></li>';
+									}
+								?>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-middle-->
+	
+		<div class="header-bottom"><!--header-bottom-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+						</div>
+						<div class="mainmenu pull-left">
+							<ul class="nav navbar-nav collapse navbar-collapse">
+								<li><a href="index.html">Home</a></li>
+								<li><a href="shop.html?keywords=%&category=&pageNumber=1" class="">Shop</a></li>
+								<li><a href="contact-us.html">Contact</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-bottom-->
+	</header><!--/header-->
+
+	<section id="cart_items">
+		<div class="container">
+			<div class="breadcrumbs">
+				<ol class="breadcrumb">
+				  <li><a href="#">Home</a></li>
+				  <li class="active">Shopping Cart</li>
+				</ol>
+			</div>
+			<div class="table-responsive cart_info">
+				<table class="table table-condensed">
+					<thead>
+						<tr class="cart_menu">
+							<td class="image">Item</td>
+							<td class="description"></td>
+							<td class="price">Price</td>
+							<td class="quantity">Quantity</td>
+							<td class="total">Delete</td>
+							<td></td>
+						</tr>
+					</thead>
+					<tbody>
+
+					<?php include 'populateCart.php' ?>
+
+
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section> <!--/#cart_items-->
+
+	<section id="do_action">
+		<div class="container">
+			
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="total_area">
+						<div class="clearfix">
+							<div class="bill-to">
+								<p style="padding-left: 20px;">Shipping Address</p>
+								<div class="login-form " style="padding-left: 20px;">
+									<form id="checkoutForm" name="checkoutForm" action="checkout.php" method="POST">
+										<input type="text" name="fname" placeholder="First Name *" value="<?php echo $first_name ?>">
+										<input type="text" name="lname" placeholder="Last Name *" value="<?php echo $last_name ?>">
+										<input type="text" name="address" placeholder="Address 1 *" value="<?php echo $street_address ?>">
+										<input type="text" name="city" placeholder="City" value="<?php echo $city ?>">
+										<input type="text" name="state" placeholder="State" value="<?php echo $state ?>">
+										<input type="hidden" name="total" placeholder="price" value="<?php $temp = $totalPrice *1.0825; echo $temp; ?>">
+										<button id="checkoutButton" type="submit" class="btn btn-default check_out">Check Out</button>
+										<br>
+										<div id="checkout_alert_box" class="alert alert-warning"></div>
+									</form>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="total_area">
+						<ul>
+							<br>
+							<li>Cart Sub Total <span><?php echo $totalPrice ?></span></li>
+							<li>Tax <span><?php $tax = $totalPrice * .0825; $tax = round($tax,2); echo $tax ?></span></li>
+							<li>Shipping Cost <span>Free</span></li>
+							<li>Total <span><?php $total = $totalPrice + $tax; echo $total; ?></span></li>
+
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section><!--/#do_action-->
+
+	<div id="checkoutComplete" class="heading">
+		<h3>Checkout Complete</h3>
+	</div>
+
+	<?php
+		include 'footer.html';
+	?>
+
+    <script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+    <script src="js/main.js"></script>
+	
+	<script src="js/deleteFromCart.js"></script>
+</body>
+</html>

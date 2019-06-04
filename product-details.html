@@ -1,0 +1,245 @@
+<?php
+	// check if the user is logged in. But DON'T redirect to login page if not logged in
+	session_start();
+	if(isset($_SESSION['user_ID']) && isset($_SESSION['username'])){
+		$username = $_SESSION['username'];
+		$user_ID = $_SESSION['user_ID'];
+		$first_name = $_SESSION['first_name'];
+		$last_name = $_SESSION['last_name'];
+		$phone = $_SESSION['phone'];
+		$street_address = $_SESSION['street_address'];
+		$city = $_SESSION['city'];
+		$state = $_SESSION['state'];
+		$zip = $_SESSION['zip'];
+		$isAdmin = $_SESSION['isAdmin'];
+	}
+
+	// get the item_ID from the url if any, else go back to homepage
+	if(!empty($_GET['item_ID'])){
+		$item_ID = $_GET['item_ID'];
+	}else{
+		header('Location: 404.html');
+	}
+
+	// conect to database
+	include 'database-connect.php';
+	
+	// Query to get item from database;
+	$sql = "SELECT * FROM Item WHERE `item_ID`=$item_ID LIMIT 1";
+	$result = $con->query($sql);
+	
+	if($result->num_rows > 0){
+		// fetch item object from result
+		$item_obj = $result->fetch_object();
+		
+		// get item info
+		$item_name = $item_obj->item_name;
+		$item_price = $item_obj->price;
+		$num_available = $item_obj->num_available;
+		$category = $item_obj->category;
+		$description = $item_obj->description;
+		$tags = $item_obj->tags;
+	}else{
+		header('Location: 404.html');
+	}
+	
+	// Close database connection
+	$con->close();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Product Details | Comet Car Parts</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/price-range.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/main.css" rel="stylesheet">
+	<link href="css/responsive.css" rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="js/jquery.js"></script>
+
+	<!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+
+</head><!--/head-->
+
+<body>
+	<header id="header"><!--header-->
+		<div class="header-middle"><!--header-middle-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="logo pull-left">
+							<a href="index.html"><img src="images/home/logo.png" alt="" /></a>
+						</div>
+					</div>
+					<div class="col-sm-8">
+						<div class="shop-menu pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+									if(isset($_SESSION['user_ID']) && isset($_SESSION['username'])){
+										// show the account and logout button if logged in
+										echo '<li><a href="my-account.html" class="" id="account_button"><i class="fa fa-user"></i> Account</a></li>';
+										echo '<li><a href="logout.php" class="" id="logout_button"><i class="fa fa-sign-out"></i> Logout</a></li>';
+									}else{
+										// show the login button if not logged in
+										echo '<li><a href="login.html" class="" id="login_button"><i class="fa fa-lock"></i> Login</a></li>';
+									}
+								?>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-middle-->
+	
+		<div class="header-bottom"><!--header-bottom-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+						</div>
+						<div class="mainmenu pull-left">
+							<ul class="nav navbar-nav collapse navbar-collapse">
+								<li><a href="index.html">Home</a></li>
+								<li><a href="shop.html?keywords=%&category=&pageNumber=1" class="">Shop</a></li>
+								<li><a href="contact-us.html">Contact</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="search_box pull-right">
+							<form action="shop.html?keywords=%&category=&pageNumber=1" method="GET">
+								<input type="text" name="keywords" placeholder="Search"/>
+								<input hidden type="submit" name="pageNumber" value="1">
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-bottom-->
+	</header><!--/header-->
+	
+	<section>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-3">
+					<div class="left-sidebar">
+						<h2>Categories</h2>
+						<?php include 'categories.html'; ?>
+					</div>
+				</div>
+				
+				<div class="col-sm-9 padding-right">
+					<div class="product-details"><!--product-details-->
+						<div class="col-sm-5">
+							<div class="view-product">
+								<img src=<?php echo '"images/product-details/'.$item_ID.'.jpg"' ?> alt="" />
+							</div>
+						</div>
+						<div class="col-sm-7">
+							<div class="product-information"><!--/product-information-->
+								<h2><?php echo $item_name ?></h2>
+								<p>Item ID: <?php echo $item_ID ?></p>
+								<span><span>$<?php echo $item_price ?></span></span>
+								<span>
+									<form id="addToCartForm" name="addToCartForm" method="POST">
+										<label>Quantity:</label>
+										<input id="quantity" name="quantity" type="text" value="1" />
+										<button id="addToCartButton" name="addToCartButton" type="submit" class="btn btn-default cart">
+											<i class="fa fa-shopping-cart"></i>
+											Add to cart
+										</button>
+										<input type="text" name="item_id" value="<?php echo $item_ID ?>" style="visibility: hidden">
+										<input type="text" name="user_id_number" value="<?php echo $user_ID ?>" style="visibility: hidden">
+									</form>
+								</span>
+								<div id="cart_alert_box" class="alert alert-warning" ></div>
+								<p><b>Availability: </b> <?php echo $num_available ?></p>
+								<p><b>Condition: </b> New</p>
+								<p><b>Category: </b> <?php echo $category ?></p>
+
+
+							</div><!--/product-information-->
+						</div>
+					</div><!--/product-details-->
+					
+					<div class="category-tab shop-details-tab"><!--category-tab-->
+						<div class="col-sm-12">
+							<ul class="nav nav-tabs">
+								<li class="active"><a href="#details" data-toggle="tab">Details</a></li>
+								<li><a href="#reviews" data-toggle="tab">Reviews</a></li>
+							</ul>
+						</div>
+						<div class="tab-content">
+							<div class="tab-pane fade active in" id="details" >
+								<div class="col-sm-12">
+									<p><?echo $description ?></p>
+								</div>
+							</div>			
+							<div class="tab-pane fade" id="reviews" >
+								<div class="col-sm-12">
+									<ul>
+										<li><a href=""><i class="fa fa-user"></i>User</a></li>
+										<li><a href=""><i class="fa fa-clock-o"></i>12:41 PM</a></li>
+										<li><a href=""><i class="fa fa-calendar-o"></i>31 DEC 2014</a></li>
+									</ul>
+									<p>Review Here</p>
+									<p><b>Write Your Review</b></p>
+									
+									<form action="#">
+										<span>
+											<input type="text" placeholder="Your Name"/>
+											<input type="email" placeholder="Email Address"/>
+										</span>
+										<textarea name="" ></textarea>
+										<b>Rating: </b> <img src="images/product-details/rating.png" alt="" />
+										<button type="button" class="btn btn-default pull-right">
+											Submit
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div><!--/category-tab-->
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<?php
+		include 'footer.html';
+	?>
+
+    <script src="js/jquery.js"></script>
+	<script src="js/price-range.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+    <script src="js/main.js"></script>
+	<script src="js/updateCart.js"></script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<?php
+	// connect to database
+	include 'database-connect.php';
+	
+	// Check if the user is logged in
+	include 'check-logged-in.php';
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Account | Comet Car Parts</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/price-range.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/main.css" rel="stylesheet">
+	<link href="css/responsive.css" rel="stylesheet">
+	<link rel="stylesheet" href="css/register.css" type="text/css">
+	<link href="css/login.css" rel="stylesheet" type="text/css">
+	<script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="js/jquery.js"></script>
+	<script src="js/price-range.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+    <script src="js/main.js"></script>
+	<script src="http://cdn.jsdelivr.net/jquery.validation/1.15.1/jquery.validate.min.js"></script>
+	<script src="js/update-profile.js"></script>
+	<script src="js/update-address.js"></script>
+	<script src="js/adminOptions.js"></script>
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+
+<body>
+	<header id="header"><!--header-->
+		<div class="header-middle"><!--header-middle-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="logo pull-left">
+							<a href="index.html"><img src="images/home/logo.png" alt="" /></a>
+						</div>
+					</div>
+					<div class="col-sm-8">
+						<div class="shop-menu pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+									if(isset($_SESSION['user_ID']) && isset($_SESSION['username'])){
+										// show the account and logout button if logged in
+										echo '<li><a href="my-account.html" class="active" id="account_button"><i class="fa fa-user"></i> Account</a></li>';
+										echo '<li><a href="logout.php" class="" id="logout_button"><i class="fa fa-sign-out"></i> Logout</a></li>';
+									}else{
+										// show the login button if not logged in
+										echo '<li><a href="login.html" class="" id="login_button"><i class="fa fa-lock"></i> Login</a></li>';
+									}
+								?>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-middle-->
+
+		<div class="header-bottom"><!--header-bottom-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+						</div>
+						<div class="mainmenu pull-left">
+							<ul class="nav navbar-nav collapse navbar-collapse">
+								<li><a href="index.html">Home</a></li>
+								<li><a href="shop.html?keywords=%&category=&pageNumber=1" class="">Shop</a></li>
+								<li><a href="contact-us.html">Contact</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-bottom-->
+	</header><!--/header-->
+
+	<!-- Content -->
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="category-tab shop-details-tab">
+					<div class="col-sm-12">
+						<ul class="nav nav-tabs">
+							<li class="active"><a href="#profile" data-toggle="tab">Profile</a></li>
+							<li><a href="#addresses" data-toggle="tab">Shipping Addresses</a></li>
+							<li><a href="#orders" data-toggle="tab">Orders</a></li>
+							<?php if(isset($_SESSION['isAdmin']) && $_SESSION['isAdmin']==1) { ?>
+							<li><a href="#adminListAll" data-toggle="tab">List All Items</a></li>
+							<li><a href="#adminAddItem" data-toggle="tab">Add Item</a></li>
+							<li><a href="#adminDeleteItem" data-toggle="tab">Delete Item</a></li>
+							<li><a href="#adminUpdateItem" data-toggle="tab">Update Item</a></li>
+
+							<?php } ?>
+
+
+						</ul>
+					</div>
+					<div class="tab-content">
+
+						<!-- Profile details -->
+						<div class="tab-pane fade active in" id="profile" >
+							<div class="col-md-12 login-form">
+								<h2>Profile</h2>
+								<form id="profile_form" name="profile_form" method="post">
+									<div class="col-sm-6">
+										<!-- Output for ID Number-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">User ID</label>
+												<input id="user_ID" name="user_ID" value=<?php echo "\"$user_ID\"";?> class="form-control" type="text" readonly>
+											</div>
+										</div>
+										<!-- Text input for first name-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">First Name</label>
+												<input id="first_name" name="first_name" value=<?php echo "\"$first_name\"";?> class="form-control" type="text">
+											</div>
+										</div>
+										<!-- Text input for password-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">New Password</label>
+												<input id="password" name="password" placeholder="Change password" class="form-control" type="password">
+												<div id="password_notification"></div>
+											</div>
+										</div>
+										<!-- Text input for phone number-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">Phone</label>
+												<input id="phone" name="phone" value=<?php echo "\"$phone\"";?> class="form-control" type="number">
+											</div>
+										</div>
+										<button id="update_profile_submit" name="update_profile_submit" type="submit" class="btn btn-default">Save Updates</button>
+										<br>
+										<div id="profile_alert_box" class="alert alert-warning"></div>
+									</div>
+									<div class="col-sm-6">
+										<!-- Input for Email-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">Email</label>
+												<input id="email" name="email" value=<?php echo "\"$username\"";?> class="form-control" type="text">
+												<div id="username_notification"></div>
+											</div>
+										</div>
+										<!-- Text input for last name-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">Last Name</label>
+												<input id="last_name" name="last_name" value=<?php echo "\"$last_name\"";?> class="form-control" type="text">
+											</div>
+										</div>
+										<!-- Text input for confirm new password-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">Confirm Password</label>
+												<input id="confirm_password" name="confirm_password" placeholder="Confirm new password" class="form-control" type="password">
+												<div id="confirmed_password_notification"></div>
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+
+						<!-- Shipping Addresses -->
+						<div class="tab-pane fade" id="addresses" >
+							<div class="col-md-12 login-form">
+								<h2>Shipping Addresses</h2>
+								<form id="address_form" name="address_form" method="post">
+									<div class="col-sm-6">
+										<!-- Text input for street address-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">Street Address</label>
+												<input id="street_address" name="street_address" value=<?php echo "\"$street_address\"";?> class="form-control" type="text">
+											</div>
+										</div>
+										<!-- Text input for state-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">State</label>
+												<input id="state" name="state" value=<?php echo "\"$state\"";?> class="form-control" type="text">
+											</div>
+										</div>
+										<button id="update_address_submit" name="update_address_submit" type="submit" class="btn btn-default">Save Updates</button>
+										<br>
+										<div id="address_alert_box" class="alert alert-warning"></div>
+									</div>
+									<div class="col-sm-6">
+										<!-- Input for City-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">City</label>
+												<input id="city" name="city" value=<?php echo "\"$city\"";?> class="form-control" type="text">
+											</div>
+										</div>
+										<!-- Text input for zip code-->
+										<div class="row">
+											<div class="col-md-12">
+												<label class="">Zip Code</label>
+												<input id="zip_code" name="zip_code" value=<?php echo "\"$zip\"";?> class="form-control" type="number">
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+
+						<!-- Orders -->
+						<div class="tab-pane fade" id="orders" >
+							<div class="col-md-12 login-form">
+								<h2>Orders</h2>
+								<table class="table-bordered table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th>Transaction ID</th>
+											<th>Date</th>
+											<th>Total Price</th>
+											<th>Order Summary</th>
+										</tr>
+									</thead>
+									<tbody>
+
+										<?php
+											
+											// SQL to get all trans with user's ID number ($user_ID)
+											$t_sql = "SELECT *
+													FROM Transaction t
+													JOIN User_transactions ut ON t.transaction_ID = ut.transaction_ID
+													WHERE ut.user_ID = $user_ID";
+													
+											$transactions = $con->query($t_sql);
+											while($all_t = $transactions->fetch_object()){
+												$t_ID = $all_t->transaction_ID;
+												$_SESSION['user_ID']=$user_ID;
+											$_SESSION['txn']=$t_ID;
+												echo '<tr>';
+												echo '<td>';
+												echo $t_ID;
+												echo '</td>';
+												
+												echo '<td>';
+												echo $all_t->date;
+												echo '</td>';
+												
+												echo '<td>';
+												echo $all_t->total_price;
+												echo '</td>';
+												
+												echo '<td>';
+												echo '<a href="order-summary.php">Summary</a>';
+												echo '</td>';
+												echo '</tr>';
+											}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						
+						<?php
+
+						 if(isset($_SESSION['isAdmin']) && $_SESSION['isAdmin']==1)
+						 {
+						 	include 'adminOptions/admin.html';
+
+						 }
+
+						?>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /Content -->
+	
+	<?php
+		include 'footer.html';
+	?>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<?php
+	// check if the user is logged in. If not, DON'T redirect to login page
+	session_start();
+	$rowsPerPage = 6; // this is actually items per page
+	
+	if(isset($_SESSION['user_ID']) && isset($_SESSION['username'])){
+		$username = $_SESSION['username'];
+		$user_ID = $_SESSION['user_ID'];
+		$first_name = $_SESSION['first_name'];
+		$last_name = $_SESSION['last_name'];
+		$phone = $_SESSION['phone'];
+		$street_address = $_SESSION['street_address'];
+		$city = $_SESSION['city'];
+		$state = $_SESSION['state'];
+		$zip = $_SESSION['zip'];
+		$isAdmin = $_SESSION['isAdmin'];
+	}
+
+	// search functionality using keywords. Just return empty page if no search results
+	if (!empty($_GET["keywords"])){
+		$keywords = $_GET["keywords"];
+		$tags = explode(" ", $keywords);
+		
+		// conect to database
+		include 'database-connect.php';
+		
+		// query to get all items with matching tags
+		$sql = "SELECT * FROM item WHERE ";
+		foreach($tags as &$values){
+			$sql  .= "tags LIKE '%$values%' OR ";
+		}
+		$sql = substr($sql, 0, -3);
+		$sql = $sql."AND num_available > 0";
+		$_SESSION["sql"] = $sql;
+		
+
+		//$result = $con->query($sql);
+
+		if(isset($_GET["pageNumber"])){
+			$currentPageTemp = (int) $_GET["pageNumber"];
+		}else{
+			$currentPageTemp = 1;
+		}
+
+
+
+		$_SESSION["query_result"] = $con->query($sql);
+
+
+		while ($_SESSION["rows"] = ($_SESSION["query_result"]->fetch_object()))
+		{
+			$array[] = $_SESSION["rows"];
+		}
+
+		//Pagination
+
+	}
+
+	// Categories functionality. Get the category from the url if any. If not any, don't do anything
+	if(!empty($_GET['category'])){
+		$category = $_GET['category'];
+
+		// connect to database
+		include 'database-connect.php';
+
+		// Query to get all items with matching category.
+		$sql = "SELECT *
+					FROM Item i
+					WHERE i.category = '$category'";
+		$sql = $sql."AND num_available > 0";
+
+		$_SESSION["sql"] = $sql; // <---Named like this temporarily for testing
+		
+		if(isset($_GET["pageNumber"])){
+			$currentPageTemp = (int) $_GET["pageNumber"];
+		}else{
+			$currentPageTemp = 1;
+		}
+
+		//$result = $con->query($sql);
+		$_SESSION["query_result"] = $con->query($sql); // <---Named like this temporarily for testing
+		
+		
+		while ($_SESSION["rows"] = ($_SESSION["query_result"]->fetch_object()))
+		{
+			$array[] = $_SESSION["rows"];
+		}
+	}
+
+	// default shop if category and search not provided
+	if(empty($_GET['category']) && empty($_GET["keywords"]))
+	{
+
+		include 'database-connect.php';
+
+		$sql = "SELECT * from item ";
+		$sql = $sql."AND num_available > 0";
+
+		$_SESSION["sql"] = $sql;
+		$_SESSION["query_result"] = $con->query($sql);
+		while ($_SESSION["rows"] = ($_SESSION["query_result"]->fetch_object()))
+		{
+			$array[] = $_SESSION["rows"];
+		}
+	}
+
+	/*TODO When coming to products page, it must show featured products somehow*/
+
+
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Shop | E-Shopper</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/price-range.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/main.css" rel="stylesheet">
+	<link href="css/responsive.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+
+<body>
+<?php
+
+
+
+
+
+
+
+
+		//echo '$_SESSION["items"]-fetch_assoc()';
+		//$items = $result->fetch_assoc();
+		//echo "$items->item_name";?>
+	<header id="header"><!--header-->
+		<div class="header-middle"><!--header-middle-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="logo pull-left">
+							<a href="index.html"><img src="images/home/logo.png" alt="" /></a>
+						</div>
+					</div>
+					<div class="col-sm-8">
+						<div class="shop-menu pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+									if(isset($_SESSION['user_ID']) && isset($_SESSION['username'])){
+										// show the account and logout button if logged in
+										echo '<li><a href="my-account.html" class="" id="account_button"><i class="fa fa-user"></i> Account</a></li>';
+										echo '<li><a href="logout.php" class="" id="logout_button"><i class="fa fa-sign-out"></i> Logout</a></li>';
+									}else{
+										// show the login button if not logged in
+										echo '<li><a href="login.html" class="" id="login_button"><i class="fa fa-lock"></i> Login</a></li>';
+									}
+								?>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-middle-->
+
+		<div class="header-bottom"><!--header-bottom-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+						</div>
+						<div class="mainmenu pull-left">
+							<ul class="nav navbar-nav collapse navbar-collapse">
+								<li><a href="index.html">Home</a></li>
+								<li><a href="shop.html?keywords=%&category=&pageNumber=1" class="active">Shop</a></li>
+								<li><a href="contact-us.html">Contact</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="search_box pull-right">
+							<form action="shop.html" method="GET">
+								<input type="text" name="keywords" placeholder="Search"/>
+								<input hidden type="submit" name="pageNumber" value="1">
+							</form>
+						</div>
+					</div>
+				</div>
+				</div>
+			</div>
+	</header>
+	
+	<section>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-3">
+					<div class="left-sidebar">
+						<h2>Categories</h2>
+						<?php include 'categories.html'; ?>
+					</div>
+				</div>
+				<div class="col-sm-9 padding-right">
+					<div class="features_items"><!--items-->
+						<h2 class="title text-center">Items</h2>
+						<!--TODO For each result from search or category, put in the page up to 20 results-->
+
+						<?php
+							$divRowCounter = 0;
+							$loopCounter = 0;
+							$populatePage = (int) $_GET["pageNumber"];
+							$populatePage = ($populatePage -1) * $rowsPerPage;
+							while ($loopCounter < $rowsPerPage && !empty($array[$populatePage])){
+								if($loopCounter % 3 == 0){
+									echo '<div class="row">';
+									$divRowCounter = $loopCounter + 2;
+								}
+								echo '<div class="col-sm-4">';
+								echo '<div class="product-image-wrapper">';
+								echo '<div class="single-products">';
+								echo '<div class="productinfo text-center">';
+								
+								echo '<a href="product-details.html?item_ID='.$array[$populatePage]->item_ID.'">';
+								echo '<img src="images/product-details/'.$array[$populatePage]->item_ID.'.jpg" alt="'.$array[$populatePage]->item_name.'"/>';
+								echo '</a>';
+								
+								echo '<a href="product-details.html?item_ID='.$array[$populatePage]->item_ID.'">';
+								echo '<h2>$'.$array[$populatePage]->price.'</h2>';
+								echo '</a>';
+								
+								echo '<a href="product-details.html?item_ID='.$array[$populatePage]->item_ID.'">';
+								echo '<p>'.$array[$populatePage]->item_name.'</p>';
+								echo '</a>';
+								
+								echo '</div>';
+								echo '</div>';
+								echo '</div>';
+								echo '</div>';
+								if($loopCounter == $divRowCounter){
+									echo '</div>';
+								}
+							
+								$loopCounter = $loopCounter + 1;
+								$populatePage = $populatePage + 1;
+							}
+						?>
+					</div><!--items-->
+					<br>
+					<div>
+						<ul class="pagination">
+							<?php
+
+							$numRows = $_SESSION["query_result"]->num_rows;
+
+							if ($numRows >=1)
+							{
+
+								$totalPages = ceil($numRows / $rowsPerPage );
+
+
+								if(isset($_GET["pageNumber"]))
+								{
+									$currentPage = (int) $_GET["pageNumber"];
+
+								}
+
+								else
+								{
+									$currentPage = 1;
+
+								}
+
+								if ($currentPage > $totalPages)
+								{
+									$currentPage= $totalPages;
+								}
+
+								if ($currentPage < 1)
+								{
+									$currentPage = 1;
+								}
+
+								$offset = ($currentPage - 1) * $rowsPerPage;
+
+
+								if ($currentPage >1)
+								{
+									if(!empty($keywords))
+									{
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?keywords=$keywords&pageNumber=1'>&lt&lt</a></li>";
+										$prevPage = $currentPage - 1;
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?keywords=$keywords&pageNumber=$prevPage'>&lt</a></li>";
+									}
+
+									if(!empty($category))
+									{
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?category=$category&pageNumber=1'>&lt&lt</a></li>";
+										$prevPage = $currentPage - 1;
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?category=$category&pageNumber=$prevPage'>&lt</a></li>";
+									}
+
+								}
+
+								$range = 3;
+
+								// loop to show links to range of pages around current page
+								for ($x = ($currentPage - $range); $x < (($currentPage + $range)  + 1); $x++) {
+									// if it's a valid page number...
+									if (($x > 0) && ($x <= $totalPages)) {
+										// if we're on current page...
+										if(!empty($keywords))
+										{
+										// 'highlight' it but don't make a link
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?keywords=$keywords&pageNumber=$x'>$x</a></li>";
+										}
+
+										if(!empty($category))
+										{
+											echo "<li><a href='{$_SERVER['PHP_SELF']}?category=$category&pageNumber=$x'>$x</a></li>";
+										}
+									}
+								}
+
+
+
+								if ($currentPage != $totalPages) {
+									// get next page
+									$nextPage = $currentPage + 1;
+									if(!empty($keywords))
+									{
+									// echo forward link for next page
+									echo "<li><a href='{$_SERVER['PHP_SELF']}?keywords=$keywords&pageNumber=$nextPage'>&gt</a></li>";
+									// echo forward link for lastpage
+									echo "<li><a href='{$_SERVER['PHP_SELF']}?keywords=$keywords&pageNumber=$totalPages'>&gt&gt</a></li>";
+									}
+
+									if(!empty($category))
+									{
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?category=$category&pageNumber=$nextPage'>&gt</a></li>";
+										// echo forward link for lastpage
+										echo "<li><a href='{$_SERVER['PHP_SELF']}?category=$category&pageNumber=$totalPages'>&gt&gt</a></li>";
+									}
+								} // end if
+							}
+
+
+
+							?>
+							<!--<li class="active"><a href="">1</a></li>
+							<li><a href="">2</a></li>
+							<li><a href="">3</a></li>
+							<li><a href="">&raquo;</a></li>-->
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<?php 
+		include 'footer.html';
+		
+		session_abort(); 
+	?>
+
+    <script src="js/jquery.js"></script>
+	<script src="js/price-range.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
